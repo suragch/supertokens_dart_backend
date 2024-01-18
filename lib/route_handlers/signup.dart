@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:shelf/shelf.dart';
 import 'package:http/http.dart' as http;
 
@@ -19,6 +20,15 @@ Future<Response> signupHandler(Request req) async {
   final url = Uri.parse('$superTokensBase/recipe/signup');
   final body = jsonEncode({'email': email, 'password': password});
   final response = await http.post(url, headers: headers, body: body);
+
+  final responseBody = jsonDecode(response.body);
+  if (responseBody['status'] == 'EMAIL_ALREADY_EXISTS_ERROR') {
+    return Response(
+      HttpStatus.conflict,
+      body: response.body,
+      headers: response.headers,
+    );
+  }
 
   return Response(
     response.statusCode,
